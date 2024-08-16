@@ -2,8 +2,20 @@ import React from 'react';
 import { InstallPWAButton } from './install-button';
 import { useMutation } from '@tanstack/react-query';
 import { Survey, surveyKeys } from './lib/types';
-
 import { useSurveys } from './lib/api/hooks/useSurveys';
+import { supabase } from './lib/supabase';
+
+const Image = ({ image }: { image: string }) => {
+  const src = !image.startsWith('blob')
+    ? supabase.storage.from('files').getPublicUrl(image).data.publicUrl
+    : image;
+
+  return (
+    <div className="w-[500px] p-4 aspect-square object-contain">
+      <img src={src} alt="Survey" />
+    </div>
+  );
+};
 
 function App() {
   const { data: surveys } = useSurveys();
@@ -11,7 +23,7 @@ function App() {
   const { mutate: createSurvey, isPaused } = useMutation<
     Survey,
     Error,
-    Omit<Survey, 'id'>
+    FormData
   >({
     mutationKey: surveyKeys.add(),
   });
@@ -24,24 +36,9 @@ function App() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
-    console.log('>>> value', {
-      name: formData.get('name'),
-      answer: formData.get('answer'),
-      imageAnswer: formData.get('imageAnswer'),
-    });
-    console.log('>>> types', {
-      name: typeof formData.get('name'),
-      answer: typeof formData.get('answer'),
-      imageAnswer: typeof formData.get('imageAnswer'),
-    });
-
     try {
       setIsLoading(true);
-
-      createSurvey({
-        answer: formData.get('answer') as string,
-        name: formData.get('name') as string,
-      });
+      createSurvey(formData);
     } catch (e) {
       console.error(e);
       // @ts-expect-error meh
@@ -86,7 +83,7 @@ function App() {
         </label>
         <label className="flex flex-col">
           Image
-          <input name="imageAnswer" type="file" />
+          <input name="image" type="file" />
         </label>
         <button
           disabled={isLoading}
@@ -113,6 +110,8 @@ function App() {
               </pre> */}
               <p>{survey.name}</p>
               <p>{survey.answer}</p>
+
+              {survey.image && <Image image={survey.image} />}
               {/* <div className="w-full p-4 aspect-square object-contain">
                 <img src={survey.imageUrl} alt="Survey" />
               </div>

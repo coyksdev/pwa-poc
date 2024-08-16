@@ -35,7 +35,7 @@ export default defineConfig({
         runtimeCaching: [
           {
             urlPattern: ({ url }) => {
-              return url.pathname.startsWith('/rest/v1/survey');
+              return url.pathname.startsWith('/functions/v1/create-survey');
             },
             method: 'POST',
             handler: 'NetworkOnly',
@@ -43,7 +43,7 @@ export default defineConfig({
               backgroundSync: {
                 name: 'survey-api-background-sync',
                 options: {
-                  maxRetentionTime: 60 * 60,
+                  maxRetentionTime: 60 * 60 * 24,
                 },
               },
             },

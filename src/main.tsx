@@ -24,33 +24,48 @@ const queryClient = new QueryClient({
 });
 
 queryClient.setMutationDefaults(surveyKeys.add(), {
-  mutationFn: async ({ answer, name }: Omit<Survey, 'id'>) => {
-    await supabase.from('survey').insert([{ name, answer }]);
+  mutationFn: async (formData: FormData) => {
+    return await supabase.functions
+      .invoke('create-survey', {
+        body: formData,
+      })
+      .then((res) => res.data);
   },
-  onMutate: async ({ answer, name }) => {
+  onMutate: async (formData: FormData) => {
     await queryClient.cancelQueries({ queryKey: surveyKeys.all() });
 
-    const survey = { id: uuidv4(), name, answer };
+    const id = uuidv4();
+
+    formData.append('id', id);
 
     queryClient.setQueryData<Survey[]>(surveyKeys.all(), (old) => {
-      const newSurvey: Survey = { id: uuidv4(), name, answer };
+      const newSurvey: Survey = {
+        id: id,
+        name: formData.get('name') as string,
+        answer: formData.get('answer') as string,
+        image: URL.createObjectURL(formData.get('image') as File),
+      };
       return old ? [...old, newSurvey] : [newSurvey];
     });
 
-    return { survey };
+    return { survey: formData };
   },
   onSuccess: (result, _, context) => {
+    const survey = context?.survey as FormData;
+    const id = survey.get('id') as string;
     queryClient.setQueryData<Survey[] | undefined>(
       surveyKeys.all(),
       (old) =>
-        old?.map((survey) =>
-          survey.id === context.survey.id ? result : survey
-        ) as Survey[] | undefined
+        old?.map((survey) => (survey.id === id ? result : survey)) as
+          | Survey[]
+          | undefined
     );
   },
   onError: (_, ___, context) => {
+    const survey = context?.survey as FormData;
+    const id = survey.get('id') as string;
     queryClient.setQueryData<Survey[] | undefined>(surveyKeys.all(), (old) =>
-      old?.filter((survey) => survey.id !== context?.survey.id)
+      old?.filter((survey) => survey.id !== id)
     );
   },
   retry: 3,
