@@ -82,10 +82,12 @@ const _Root = () => {
   return (
     <PersistQueryClientProvider
       client={queryClient}
-      persistOptions={{ persister }}
+      persistOptions={{
+        persister,
+      }}
       onSuccess={() => {
         queryClient.resumePausedMutations().then(() => {
-          console.log("resumePausedMutations");
+          queryClient.invalidateQueries();
         });
       }}
     >
