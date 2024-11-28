@@ -80,6 +80,9 @@ const _Root = () => {
     <PersistQueryClientProvider
       client={queryClient}
       persistOptions={{ persister }}
+      onSuccess={() => {
+        queryClient.resumePausedMutations();
+      }}
     >
       <App />
       <ReactQueryDevtools />
