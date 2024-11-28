@@ -29,28 +29,6 @@ export default defineConfig({
           },
         ],
       },
-      // workbox: {
-      //   clientsClaim: true,
-      //   skipWaiting: true,
-      //   runtimeCaching: [
-      //     {
-      //       urlPattern: ({ url }) => {
-      //         return url.pathname.startsWith('/functions/v1/create-survey');
-      //       },
-      //       method: 'POST',
-      //       handler: 'NetworkOnly',
-      //       options: {
-      //         backgroundSync: {
-      //           name: 'survey-api-background-sync',
-      //           options: {
-      //             maxRetentionTime: 60 * 60 * 24,
-      //           },
-      //         },
-      //       },
-      //     },
-      //   ],
-      // },
-
       devOptions: {
         enabled: true,
         navigateFallback: "index.html",
