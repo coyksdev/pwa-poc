@@ -7,10 +7,10 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { supabase } from "./lib/supabase.ts";
 import { Survey, surveyKeys } from "./lib/types.ts";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { v4 as uuidv4 } from "uuid";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 
-const persister = createAsyncStoragePersister({
+const persister = createSyncStoragePersister({
   storage: window.localStorage,
 });
 
@@ -72,6 +72,9 @@ queryClient.setMutationDefaults(surveyKeys.add(), {
       old?.filter((survey) => survey.id !== id)
     );
   },
+  onSettled: () => {
+    console.log("onSettled");
+  },
   retry: 3,
 });
 
@@ -81,7 +84,9 @@ const _Root = () => {
       client={queryClient}
       persistOptions={{ persister }}
       onSuccess={() => {
-        queryClient.resumePausedMutations();
+        queryClient.resumePausedMutations().then(() => {
+          console.log("resumePausedMutations");
+        });
       }}
     >
       <App />
